@@ -2,8 +2,10 @@
 
 A sample utility to parse CSV file and assign users to projects using qTest API's and NodeJS.
 
-
 # Installation & How to Run
+
+Before moving forward, Please generate access token using [qTest API's](https://api.qasymphony.com/#/login/postAccessToken) 
+
 You would need to clone the repository to run the application
 
 ```bash
