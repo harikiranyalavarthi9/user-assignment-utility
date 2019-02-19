@@ -1,4 +1,4 @@
-# verizon-utility
+# user-assignment-utility
 
 A sample utility to parse CSV file and assign users to projects using qTest API's and NodeJS.
 
@@ -9,8 +9,8 @@ Before moving forward, Please generate access token using [qTest API's](https://
 You would need to clone the repository to run the application
 
 ```bash
-git clone https://github.com/harikiranyalavarthi9/verizon-utility.git
-cd verizon-utility
+git clone https://github.com/harikiranyalavarthi9/user-assignment-utility.git
+cd user-assignment-utility
 ```
 
 You can run the application on Windows, MacOS, Linux either using node or using executable files.
