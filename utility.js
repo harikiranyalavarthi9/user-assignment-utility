@@ -35,15 +35,25 @@ axios.all([getProjectData(), getUserData(), getUserProfiles()])
                     .on('data', async (data) => {
                         let user_profile_filter = user_profiles.filter((value) => value.name == data.profile_name);
                         let project_filter = project_data.filter((value) => projects.includes(value.name));
-                        let checkUser = user_data.filter((value) => value.username == data.email);
+                        const capitalize = (s) => {
+                            if (typeof s !== 'string') return ''
+                            return s.charAt(0).toUpperCase() + s.slice(1)
+                        }
+                        let splitEmailbyDomain = data.email.split('@');
+                        let splitEmail = splitEmailbyDomain[0].split('.');
+                        let capitalizedEmail = splitEmail.length === 2 ? splitEmail.map((value) => capitalize(value)).join('.').concat('@'+splitEmailbyDomain[1]) : splitEmail.join('.').concat('@'+splitEmailbyDomain[1])
+                        
+                        let checkUser = user_data.filter((value) => value.username === data.email || value.username === capitalizedEmail || value.username === data.email.toLowerCase());
                         if (checkUser.length === 0) {
                             try {
                                 let body = {
                                     username: data.email,
                                     email: data.email,
                                     password: data.password ? data.password : `admin123`,
-                                    first_name: data.first_name ? data.first_name : `Verizon`,
-                                    last_name: data.last_name ? data.last_name : `User`
+                                    first_name: data.first_name ? data.first_name : `Test`,
+                                    last_name: data.last_name ? data.last_name : `User`,
+                                    send_activation_email: false,
+                                    include_default_groups: false
                                 };
                                 let response = await axios.post(process.argv[5] + '/api/v3/users/', body, qTest_config)
                                 if (response.status === 201) {
@@ -81,22 +91,30 @@ axios.all([getProjectData(), getUserData(), getUserProfiles()])
                                 }
                             }
                         } else {
-                            let existing_user = await axios.get(process.argv[5] + '/api/v3/users/search?username=' + data.email + '&includeInactiveUsers=false&pagination=false&pageSize=999', qTest_config);
-                            let existing_user_id = existing_user.data[0].id;
                             try {
-                                for (let i = 0; i < project_filter.length; i++) {
-                                    let existing_body = {
-                                        project_id: parseInt(project_filter[i].id),
-                                        profile: {
-                                            id: parseInt(user_profile_filter[0].id),
-                                            name: user_profile_filter[0].name,
-                                            is_readonly: user_profile_filter[0].is_readonly,
-                                            is_admin: user_profile_filter[0].is_admin
+                                let existing_user_id = checkUser[0].id;
+                                let update_user_body = {
+                                    first_name: data.first_name,
+                                    last_name: data.last_name,
+                                    status: 1 
+                                }
+                                let update_user_response = await axios.put(process.argv[5] + '/api/v3/users/' + existing_user_id, update_user_body, qTest_config)
+                                if(update_user_response.status === 200) {
+                                    console.log(`Updated User information for : ${checkUser[0].username}`);
+                                    for (let i = 0; i < project_filter.length; i++) {
+                                        let existing_body = {
+                                            project_id: parseInt(project_filter[i].id),
+                                            profile: {
+                                                id: parseInt(user_profile_filter[0].id),
+                                                name: user_profile_filter[0].name,
+                                                is_readonly: user_profile_filter[0].is_readonly,
+                                                is_admin: user_profile_filter[0].is_admin
+                                            }
+                                        };
+                                        let assign1_response = await axios.post(process.argv[5] + '/api/v3/users/' + existing_user_id + '/projects', existing_body, qTest_config)
+                                        if (assign1_response.status === 201) {
+                                            console.log(`Assigned User: ${checkUser[0].username} to Project: ${project_filter[i].name} as ${data.profile_name}`);
                                         }
-                                    };
-                                    let assign1_response = await axios.post(process.argv[5] + '/api/v3/users/' + existing_user_id + '/projects', existing_body, qTest_config)
-                                    if (assign1_response.status === 201) {
-                                        console.log(`Assigned User: ${data.email} to Project: ${project_filter[i].name} as ${data.profile_name}`);
                                     }
                                 }
                             } catch (error) {
