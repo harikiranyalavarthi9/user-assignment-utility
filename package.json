@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/harikiranyalavarthi9/user-assignment-utility#readme",
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "csv-parser": "^2.1.0"
   }
 }
